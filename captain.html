@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ff5a00">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Talabat Captains">
+<meta name="robots" content="noindex,nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<title>Talabat Captains Hub</title>
+<style>
+:root{--or:#ff5a00;--or2:#ff7a2e;--bg:#f4f5f7;--card:#fff;--card2:#eef0f3;--tx:#1b1c1f;--mut:#6b6f78;--bd:#dfe2e7;--ok:#0f9d58;--bad:#d93025;--warn:#c77700;--blue:#2563eb;--sh:0 2px 10px rgba(0,0,0,.08)}
+@media (prefers-color-scheme:dark){:root{--bg:#111214;--card:#1b1c1f;--card2:#242529;--tx:#f1f1f2;--mut:#9a9ca3;--bd:#2f3035;--ok:#1fbf6b;--bad:#ff4d4f;--warn:#f5a524;--blue:#3b82f6;--sh:0 2px 10px rgba(0,0,0,.4)}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font:400 15px/1.55 "Segoe UI",Tahoma,"Noto Sans Arabic",Arial,sans-serif;min-height:100vh;min-height:100dvh;padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+[hidden]{display:none!important}
+.ltr{direction:ltr;unicode-bidi:embed;display:inline-block}
+
+/* ---------- Header ---------- */
+header{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:3px solid var(--or);padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.brand{display:flex;align-items:center;gap:8px;min-width:0}
+.logo{flex:none;display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:var(--or);color:#fff;font-weight:800;font-size:21px;line-height:1}
+.brand b{font-size:15px;white-space:nowrap}
+.brand small{display:block;color:var(--mut);font-size:11px;line-height:1.2}
+.hact{display:flex;gap:6px}
+.ib{background:var(--card2);color:var(--tx);border:1px solid var(--bd);border-radius:10px;width:38px;height:38px;font-size:17px;cursor:pointer}
+.ib:active{background:var(--or);color:#fff}
+
+/* ---------- Layout ---------- */
+main{padding:10px;max-width:760px;margin:0 auto}
+.view{display:none}.view.on{display:block}
+.sbar{position:sticky;top:calc(56px + env(safe-area-inset-top,0px));z-index:15;background:var(--bg);padding:6px 0 8px;display:flex;gap:6px}
+.sbar input{flex:1;min-width:0;background:var(--card);color:var(--tx);border:2px solid var(--bd);border-radius:12px;padding:12px;font:inherit;font-size:16px;outline:none}
+.sbar input:focus{border-color:var(--or)}
+.btn{background:var(--or);color:#fff;border:0;border-radius:12px;padding:0 16px;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer;min-height:44px}
+.btn:active{background:var(--or2)}
+.btn.ghost{background:var(--card2);color:var(--tx);border:1px solid var(--bd)}
+.btn.sm{min-height:38px;padding:0 12px;font-size:13px;border-radius:10px}
+.btn.ok{background:var(--ok)}
+.btn.blue{background:var(--blue)}
+a.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.hint{color:var(--mut);font-size:12.5px}
+.banner{border-radius:12px;padding:10px 12px;margin:6px 0 10px;border:1px solid;font-size:13.5px}
+.banner.warn{background:rgba(245,165,36,.13);border-color:var(--warn)}
+.banner.bad{background:rgba(255,77,79,.12);border-color:var(--bad)}
+.empty{text-align:center;color:var(--mut);padding:36px 12px}
+.empty .big{font-size:42px}
+
+/* ---------- Cards ---------- */
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:12px;margin-bottom:12px;box-shadow:var(--sh)}
+.rh{display:flex;gap:12px}
+.ph{flex:none;display:flex;flex-direction:column;gap:6px;align-items:center}
+.pic{width:104px;height:132px;border-radius:12px;border:2px solid var(--or);background:var(--card2);display:grid;place-items:center;font-size:40px;overflow:hidden;cursor:zoom-in}
+.pic img{width:100%;height:100%;object-fit:cover;display:block}
+.pic.none{cursor:default;font-size:34px;color:var(--mut)}
+.ri{flex:1;min-width:0}
+.ri h3{margin:0 0 6px;font-size:17px;line-height:1.3;word-break:break-word}
+.badges{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.b{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12.5px;font-weight:700;border:1px solid var(--bd);background:var(--card2)}
+.b.ok{color:var(--ok);border-color:var(--ok);background:rgba(31,191,107,.1)}
+.b.bad{color:var(--bad);border-color:var(--bad);background:rgba(255,77,79,.1)}
+.b.warn{color:var(--warn);border-color:var(--warn);background:rgba(245,165,36,.1)}
+.b.mut{color:var(--mut)}
+.fields{margin:8px 0 0;display:grid;gap:4px}
+.f{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--card2);border-radius:10px;padding:7px 10px;cursor:pointer}
+.f:active{outline:2px solid var(--or)}
+.f .k{color:var(--mut);font-size:12.5px;flex:none}
+.f .v{font-weight:700;word-break:break-word;text-align:end;direction:ltr;unicode-bidi:plaintext;flex:1}
+.f .cp{flex:none;color:var(--or);font-size:14px}
+.suspnote{margin-top:6px;font-size:13px;color:var(--bad);font-weight:600}
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.acts .btn{flex:1 1 40%}
+
+/* ---------- Orders ---------- */
+.ohead{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.ohead h2{margin:0;font-size:17px}
+.role{margin:10px 0 6px;padding:7px 10px;border-radius:10px;font-weight:800;font-size:14px;border-inline-start:5px solid var(--or);background:rgba(255,90,0,.1)}
+.role.partner{border-color:var(--blue);background:rgba(37,99,235,.1)}
+.rider-box{border:1px dashed var(--bd);border-radius:14px;padding:10px;margin-bottom:8px}
+.rider-box .card{box-shadow:none;margin:0;border:0;padding:0;background:transparent}
+.ostat{font-size:12.5px;color:var(--mut);margin-top:4px}
+
+/* ---------- Bottom nav ---------- */
+nav{position:fixed;inset-inline:0;bottom:0;z-index:25;background:var(--card);border-top:2px solid var(--or);display:flex;padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;background:none;border:0;color:var(--mut);padding:9px 4px 8px;font-weight:700;font-size:13px;font-family:inherit;cursor:pointer}
+nav button span{display:block;font-size:21px;line-height:1.1}
+nav button.on{color:var(--or)}
+
+/* ---------- Gate screens ---------- */
+.gate{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px}
+.gbox{width:min(380px,100%);background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:24px 18px;text-align:center;box-shadow:var(--sh)}
+.gbox .logo{width:60px;height:60px;font-size:40px;border-radius:16px;margin:0 auto 10px}
+.gbox h1{font-size:19px;margin:6px 0}
+.gbox p{color:var(--mut);margin:6px 0 14px;font-size:14px}
+.gbox input{width:100%;background:var(--card2);color:var(--tx);border:2px solid var(--bd);border-radius:12px;padding:12px;font:inherit;direction:ltr;margin-bottom:10px}
+#gsiBtn{display:flex;justify-content:center;min-height:44px;margin:8px 0}
+.err{color:var(--bad);font-weight:700;font-size:14px;margin-top:8px}
+
+/* ---------- Lightbox & toast ---------- */
+#lb{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px}
+#lb img{max-width:100%;max-height:68vh;border-radius:14px;border:3px solid var(--or);background:#000;-webkit-touch-callout:default;user-select:auto}
+#lb .row{display:flex;gap:8px}
+#toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:rgba(0,0,0,.85);color:#fff;padding:9px 18px;border-radius:22px;opacity:0;transition:.2s;z-index:80;pointer-events:none;max-width:90vw;text-align:center;font-size:14px}
+#toast.on{opacity:1;transform:translateX(-50%)}
+.spin{display:inline-block;width:22px;height:22px;border:3px solid var(--bd);border-top-color:var(--or);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- ============ شاشة التحميل / الدخول / الرفض ============ -->
+<div id="gate" class="gate">
+  <div class="gbox" id="gbox">
+    <div class="logo">t</div>
+    <h1>Talabat Captains Hub</h1>
+    <p><span class="spin"></span></p>
+  </div>
+</div>
+
+<!-- ============ التطبيق ============ -->
+<div id="app" hidden>
+  <header>
+    <div class="brand">
+      <span class="logo">t</span>
+      <div><b>Captains Hub</b><small id="updInfo">—</small></div>
+    </div>
+    <div class="hact">
+      <button class="ib" id="refreshBtn" title="تحديث البيانات">🔄</button>
+      <button class="ib" id="logoutBtn" title="تسجيل الخروج">⏻</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="staleBanner" class="banner warn" hidden></div>
+
+    <!-- ===== المناديب ===== -->
+    <section id="v-riders" class="view on">
+      <div class="sbar">
+        <input id="rq" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false"
+               placeholder="نمرة المكنة / الاسم / الموبايل / الكود / القومي">
+        <button class="btn" id="rGo">بحث</button>
+      </div>
+      <div id="rInfo" class="hint" style="margin:0 2px 8px"></div>
+      <div id="rOut"><div class="empty"><div class="big">🏍️</div>اكتب نمرة المكنة أو الاسم أو الموبايل أو الكود أو الرقم القومي</div></div>
+    </section>
+
+    <!-- ===== الأوردرات ===== -->
+    <section id="v-orders" class="view">
+      <div class="sbar">
+        <input id="oq" type="search" inputmode="numeric" enterkeyhint="search" autocomplete="off" placeholder="كود الأوردر (مثال: 4702417071)">
+        <button class="btn" id="oGo">بحث</button>
+      </div>
+      <div id="oOut"><div class="empty"><div class="big">📦</div>اكتب كود الأوردر لعرض المناديب المرتبطين به</div></div>
+    </section>
+  </main>
+
+  <nav>
+    <button class="on" data-v="riders"><span>🏍️</span>المناديب</button>
+    <button data-v="orders"><span>📦</span>الأوردرات</button>
+  </nav>
+</div>
+
+<div id="lb" hidden></div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+ * Talabat Captains Hub — captain.html  (عرض ونسخ فقط — بدون أي أكشن)
+ *
+ * التدفق: meta.json -> مفتاح الوصول -> Google Sign-In -> فك auth.bin والتحقق من الإيميل
+ *         -> فك riders.bin + orders.bin -> البحث والعرض والنسخ.
+ * الصور تُحمَّل عند الحاجة من حزم مشفرة data/photos/p<N>.bin.
+ * لا توجد هنا أي بيانات أو مفاتيح مكتوبة ثابتة: كل شيء يأتي من data/meta.json ومفتاح الرابط.
+ * ===================================================================== */
+
+/*LIB_START*/
+// ------------------------- أدوات النصوص والأرقام -------------------------
+const AR_D = '٠١٢٣٤٥٦٧٨٩', FA_D = '۰۱۲۳۴۵۶۷۸۹';
+const latin = (s) => String(s == null ? '' : s).replace(/[٠-٩]/g, (d) => AR_D.indexOf(d)).replace(/[۰-۹]/g, (d) => FA_D.indexOf(d));
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const normKey = (s) => latin(s).toLowerCase().replace(/[\s\-_.\/\\|،,]/g, '').replace(/[أإآٱ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه');
+const normName = (s) => latin(s).toLowerCase().replace(/[\u064B-\u0652\u0640]/g, '').replace(/[أإآٱ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه').replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+const digitsOf = (s) => latin(s).replace(/\D/g, '');
+
+/** رقم الموبايل بصيغة دولية بدون + (مصر) */
+function intlPhone(p) {
+  let d = digitsOf(p);
+  if (!d) return '';
+  if (d.startsWith('0020')) d = d.slice(2);
+  if (d.startsWith('20') && d.length >= 12) return d;
+  if (d.startsWith('0') && d.length === 11) return '20' + d.slice(1);
+  if (d.length === 10 && d[0] === '1') return '20' + d;
+  return d;
+}
+/** آخر 10 أرقام للمقارنة */
+const phoneCore = (p) => { const d = digitsOf(p); return d.length > 10 ? d.slice(-10) : d.replace(/^0/, ''); };
+
+// ------------------------- النمر -------------------------
+function plateParts(plate) {
+  const k = normKey(plate);
+  const d = (k.match(/\d/g) || []).join('');
+  const l = k.replace(/\d/g, '').split('').sort().join('');
+  return { k, d, l, sk: d + '|' + l };
+}
+const hasAll = (full, part) => {
+  const f = full.split('');
+  for (const ch of part) { const i = f.indexOf(ch); if (i < 0) return false; f.splice(i, 1); }
+  return true;
+};
+
+// ------------------------- فهرس البحث -------------------------
+function buildIndex(riders) {
+  const byId = new Map();
+  riders.forEach((r) => {
+    r._id = String(r.i);
+    r._name = normName(r.n);
+    r._ph = phoneCore(r.p);
+    r._nid = digitsOf(r.d);
+    r._pp = plateParts(r.l || '');
+    byId.set(r._id, r);
+  });
+  return byId;
+}
+
+/** بحث موحّد: كود / موبايل / قومي / نمرة (بأي ترتيب أو مسافات أو أرقام عربية) / اسم */
+function searchRiders(riders, q, limit) {
+  limit = limit || 40;
+  const raw = String(q || '').trim();
+  if (!raw) return [];
+  const flat = latin(raw).replace(/[\s\-_.\/\\|،,]/g, '');
+  const out = [], seen = new Set();
+  const push = (r) => { if (r && !seen.has(r._id) && out.length < limit) { seen.add(r._id); out.push(r); } };
+  const scan = (fn) => { for (const r of riders) { if (out.length >= limit) break; if (fn(r)) push(r); } };
+
+  if (/^\+?\d+$/.test(flat)) {
+    const d = flat.replace(/^\+/, '');
+    // --- تطابق تام أولاً: القومي / الكود / الموبايل / أرقام النمرة ---
+    if (d.length === 14) scan((r) => r._nid === d);
+    if (d.length >= 4 && d.length <= 9) scan((r) => r._id === d);
+    const core = phoneCore(d);
+    if (core.length >= 9) scan((r) => r._ph && r._ph === core.slice(-10));
+    if (d.length >= 3 && d.length <= 7) scan((r) => r._pp.d === d);
+    if (out.length) return out;          // وُجد تطابق تام: لا نزعج الكابتن بنتائج جزئية
+    // --- تطابق جزئي ---
+    if (d.length >= 3 && d.length <= 7) scan((r) => r._pp.d && r._pp.d.includes(d));
+    if (d.length >= 6) { scan((r) => r._nid && r._nid.includes(d)); scan((r) => r._ph && r._ph.includes(d)); }
+    if (d.length >= 4 && d.length <= 9) scan((r) => r._id.startsWith(d));
+    return out;
+  }
+
+  const qp = plateParts(raw);
+  const hasDigit = /\d/.test(latin(raw));
+  const nameQ = normName(raw);
+  const toks = nameQ.split(' ').filter(Boolean);
+  const nameScan = () => { if (toks.length) scan((r) => toks.every((t) => r._name.includes(t))); };
+
+  if (hasDigit) {      // مزيج حروف + أرقام => نمرة
+    scan((r) => r._pp.k && r._pp.k === qp.k);
+    scan((r) => r._pp.sk && r._pp.sk === qp.sk);
+    if (qp.d.length >= 3) scan((r) => r._pp.d === qp.d && hasAll(r._pp.l, qp.l));
+    nameScan();
+  } else {
+    nameScan();
+    if (!out.length && qp.l) scan((r) => r._pp.k && r._pp.k.includes(qp.k));
+  }
+  return out;
+}
+
+// ------------------------- الإيقاف -------------------------
+/** يرجع { cur: {s,e}|null, next: {s,e}|null } بالمللي ثانية */
+function suspState(r, now) {
+  now = now || Date.now();
+  let cur = null, next = null;
+  (r.u || []).forEach((u) => {
+    const s = Date.parse(u[0]), e = Date.parse(u[1]);
+    if (isNaN(s) || isNaN(e)) return;
+    if (s <= now && now <= e) { if (!cur || e > cur.e) cur = { s, e }; }
+    else if (s > now) { if (!next || s < next.s) next = { s, e }; }
+  });
+  return { cur, next };
+}
+
+// ------------------------- التشفير (متوافق مع sync.js) -------------------------
+const dec = new TextDecoder();
+const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+async function deriveAesKey(accessKey, saltB64, iter) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(accessKey), 'PBKDF2', false, ['deriveBits']);
+  const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: b64(saltB64), iterations: iter, hash: 'SHA-256' }, base, 512));
+  return crypto.subtle.importKey('raw', bits.slice(0, 32), 'AES-GCM', false, ['decrypt']);
+}
+/** الصيغة: [12 بايت IV][بيانات مشفرة AES-GCM] */
+async function decryptBytes(key, buf) {
+  const u = new Uint8Array(buf);
+  if (u.length < 29) throw new Error('bad-file');
+  return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: u.slice(0, 12) }, key, u.slice(12)));
+}
+async function gunzip(u8) {
+  const ds = new DecompressionStream('gzip');
+  const w = ds.writable.getWriter();
+  w.write(u8); w.close();
+  return new Uint8Array(await new Response(ds.readable).arrayBuffer());
+}
+async function decryptJson(key, buf) {
+  return JSON.parse(dec.decode(await gunzip(await decryptBytes(key, buf))));
+}
+/** حاوية الصور: [u32 عدد] ثم لكل صورة [u32 id][u32 طول][JPEG] => Map(id -> Uint8Array) */
+function parsePhotoPack(u8) {
+  const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+  const map = new Map();
+  let o = 0;
+  const n = dv.getUint32(o); o += 4;
+  for (let k = 0; k < n; k++) {
+    const id = dv.getUint32(o); o += 4;
+    const len = dv.getUint32(o); o += 4;
+    map.set(String(id), u8.subarray(o, o + len));
+    o += len;
+  }
+  return map;
+}
+/*LIB_END*/
+
+// ============================ حالة التطبيق ============================
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const TZ = 'Africa/Cairo';
+const SESSION_MS = 24 * 3600 * 1000;
+const S = { meta: null, cryptoKey: null, email: '', riders: [], byId: new Map(), orders: new Map(), packs: new Map(), urls: new Map() };
+
+const fmtDT = (v) => {
+  const d = typeof v === 'number' ? new Date(v) : new Date(v);
+  return isNaN(d) ? '—' : d.toLocaleString('ar-EG', { timeZone: TZ, hour12: true, day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+};
+function toast(m) {
+  const e = $('#toast');
+  e.textContent = m; e.classList.add('on');
+  clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('on'), 2200);
+}
+async function copyText(s) {
+  try { await navigator.clipboard.writeText(s); }
+  catch (_) {
+    const a = document.createElement('textarea');
+    a.value = s; a.setAttribute('readonly', ''); a.style.cssText = 'position:fixed;top:0;opacity:0';
+    document.body.append(a); a.select(); a.setSelectionRange(0, 99999);
+    try { document.execCommand('copy'); } catch (_) {}
+    a.remove();
+  }
+  toast('تم النسخ ✓');
+}
+const bust = () => '?t=' + Math.floor(Date.now() / 30000);
+async function fetchBin(path) {
+  const r = await fetch(path + bust(), { cache: 'no-store' });
+  if (!r.ok) { const e = new Error('HTTP ' + r.status); e.status = r.status; throw e; }
+  return r.arrayBuffer();
+}
+
+// ============================ شاشات الدخول ============================
+function gate(html) {
+  $('#app').hidden = true;
+  $('#gate').hidden = false;
+  $('#gbox').innerHTML = '<div class="logo">t</div><h1>Talabat Captains Hub</h1>' + html;
+}
+const gateErr = (m, extra) => gate(`<p class="err">${m}</p>${extra || ''}`);
+
+function getKey() {
+  const m = /[#&]k=([^&]+)/.exec(location.hash || '');
+  if (m) {
+    try { localStorage.setItem('cap_key', decodeURIComponent(m[1])); } catch (_) {}
+    history.replaceState(null, '', location.pathname + location.search);   // إخفاء المفتاح من شريط العنوان
+  }
+  try { return localStorage.getItem('cap_key') || ''; } catch (_) { return ''; }
+}
+function askKey(msg) {
+  gate(`<p>${msg || 'أدخل مفتاح الوصول الذي أرسله لك المشرف (أو افتح الرابط الكامل الذي وصلك).'}</p>
+    <input id="keyIn" placeholder="Access Key" autocomplete="off">
+    <button class="btn" id="keyGo" style="width:100%">متابعة</button>`);
+  $('#keyGo').onclick = () => {
+    const v = $('#keyIn').value.trim();
+    if (!v) return;
+    try { localStorage.setItem('cap_key', v); } catch (_) {}
+    boot();
+  };
+}
+
+function loadSession() {
+  try {
+    const s = JSON.parse(localStorage.getItem('cap_sess') || 'null');
+    if (s && s.email && s.exp > Date.now()) return s;
+  } catch (_) {}
+  return null;
+}
+function saveSession(email) { try { localStorage.setItem('cap_sess', JSON.stringify({ email, exp: Date.now() + SESSION_MS })); } catch (_) {} }
+function clearSession() { try { localStorage.removeItem('cap_sess'); } catch (_) {} }
+
+function jwtPayload(tok) {
+  const p = tok.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  return JSON.parse(decodeURIComponent(escape(atob(p + '='.repeat((4 - p.length % 4) % 4)))));
+}
+
+function loadGsi() {
+  return new Promise((res, rej) => {
+    if (window.google && google.accounts && google.accounts.id) return res();
+    const s = document.createElement('script');
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.async = true; s.defer = true;
+    s.onload = () => res(); s.onerror = () => rej(new Error('gsi'));
+    document.head.append(s);
+  });
+}
+
+async function showSignIn() {
+  const cid = S.meta.clientId;
+  if (!cid) return gateErr('لم يتم ضبط Google Client ID بعد — تواصل مع المشرف.');
+  gate('<p>سجّل الدخول بحساب Google المسموح له بالدخول.</p><div id="gsiBtn"><span class="spin"></span></div><div id="gsiErr" class="err"></div>');
+  try { await loadGsi(); } catch (_) { return gateErr('تعذر تحميل خدمة تسجيل الدخول من Google — تحقق من الإنترنت.'); }
+  google.accounts.id.initialize({ client_id: cid, callback: onCredential, auto_select: true, cancel_on_tap_outside: false, use_fedcm_for_prompt: true });
+  $('#gsiBtn').innerHTML = '';
+  google.accounts.id.renderButton($('#gsiBtn'), { theme: 'filled_blue', size: 'large', text: 'signin_with', shape: 'pill', locale: 'ar', width: 280 });
+  try { google.accounts.id.prompt(); } catch (_) {}
+}
+
+async function onCredential(resp) {
+  try {
+    const p = jwtPayload(resp.credential);
+    let info = p;
+    try {   // تحقق إضافي من Google (لو فشل الاتصال نكتفي بالفحص المحلي)
+      const r = await fetch('https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(resp.credential));
+      if (r.ok) info = await r.json();
+      else if (r.status === 400) throw new Error('invalid');
+    } catch (e) { if (String(e.message) === 'invalid') throw e; }
+    const okAud = info.aud === S.meta.clientId;
+    const verified = String(info.email_verified) === 'true' || info.email_verified === true;
+    const notExpired = Number(info.exp || p.exp) * 1000 > Date.now() - 60000;
+    if (!okAud || !verified || !notExpired || !info.email) throw new Error('invalid');
+    S.email = String(info.email).toLowerCase();
+    saveSession(S.email);
+    boot();
+  } catch (_) {
+    const e = $('#gsiErr');
+    if (e) e.textContent = 'تعذر التحقق من تسجيل الدخول — حاول مرة أخرى.';
+  }
+}
+
+function denied(email) {
+  gate(`<p class="err">⛔ هذا الحساب غير مسموح له بالدخول</p><p dir="ltr">${esc(email)}</p>
+    <p>اطلب من المشرف إضافة إيميلك، أو سجّل الدخول بحساب آخر.</p>
+    <button class="btn" id="swAcc" style="width:100%">تغيير الحساب</button>`);
+  $('#swAcc').onclick = logout;
+}
+function logout() {
+  clearSession();
+  try { if (window.google && google.accounts) google.accounts.id.disableAutoSelect(); } catch (_) {}
+  location.reload();
+}
+
+// ============================ تحميل البيانات ============================
+async function loadData() {
+  const [rb, ob] = await Promise.all([fetchBin('data/riders.bin'), fetchBin('data/orders.bin').catch(() => null)]);
+  const rj = await decryptJson(S.cryptoKey, rb);
+  S.riders = rj.r || [];
+  S.byId = buildIndex(S.riders);
+  S.orders = new Map();
+  if (ob) { const oj = await decryptJson(S.cryptoKey, ob); (oj.o || []).forEach((o) => S.orders.set(String(o.c), o)); }
+  S.packs.clear();
+  S.urls.forEach((u) => { try { URL.revokeObjectURL(u); } catch (_) {} });
+  S.urls.clear();
+}
+
+function renderMeta() {
+  const m = S.meta;
+  const rt = m.riders && m.riders.t, ot = m.orders && m.orders.t;
+  $('#updInfo').textContent = `مناديب: ${fmtDT(rt)}${ot ? ' · أوردرات: ' + fmtDT(ot) : ''}`;
+  const stale = rt && Date.now() - Date.parse(rt) > 48 * 3600 * 1000;
+  const b = $('#staleBanner');
+  b.hidden = !stale;
+  if (stale) b.textContent = '⚠️ البيانات لم تُحدَّث منذ أكثر من 48 ساعة — قد لا تكون حالة الإيقاف دقيقة.';
+}
+
+async function boot() {
+  gate('<p><span class="spin"></span></p>');
+  try {
+    const r = await fetch('data/meta.json' + bust(), { cache: 'no-store' });
+    if (!r.ok) throw new Error('nometa');
+    S.meta = await r.json();
+  } catch (_) { return gateErr('التطبيق لم يتم تفعيله بعد — لا توجد بيانات منشورة. تواصل مع المشرف.'); }
+
+  if (!(window.crypto && crypto.subtle)) return gateErr('يجب فتح التطبيق عبر رابط آمن (https) — افتح الرابط من GitHub Pages مباشرة.');
+  const key = getKey();
+  if (!key) return askKey();
+
+  const sess = loadSession();
+  if (!sess) return showSignIn();
+  S.email = sess.email;
+
+  try {
+    S.cryptoKey = await deriveAesKey(key, S.meta.salt, S.meta.iter || 150000);
+    const auth = await decryptJson(S.cryptoKey, await fetchBin('data/auth.bin'));
+    if (!(auth.e || []).includes(S.email)) return denied(S.email);
+  } catch (e) {
+    console.warn('captain: decrypt/auth failed', e);
+    if (e && e.status) return gateErr('تعذر تحميل البيانات (' + e.status + ') — حاول لاحقاً.');
+    try { localStorage.removeItem('cap_key'); } catch (_) {}
+    return askKey('⚠️ مفتاح الوصول غير صحيح أو تم تغييره. أدخل المفتاح الجديد.');
+  }
+  try { await loadData(); }
+  catch (_) { return gateErr('تعذر قراءة البيانات — حاول التحديث بعد قليل.'); }
+
+  $('#gate').hidden = true;
+  $('#app').hidden = false;
+  renderMeta();
+  if ($('#rq').value) doRiderSearch(); 
+  if ($('#oq').value) doOrderSearch();
+}
+
+// ============================ الصور ============================
+function getPack(b) {
+  if (!S.packs.has(b)) {
+    S.packs.set(b, (async () => {
+      try {
+        const u8 = await decryptBytes(S.cryptoKey, await fetchBin(`data/photos/p${b}.bin`));
+        const out = new Map();
+        parsePhotoPack(u8).forEach((bytes, id) => out.set(id, new Blob([bytes], { type: 'image/jpeg' })));
+        return out;
+      } catch (_) { return new Map(); }
+    })());
+  }
+  return S.packs.get(b);
+}
+async function getPhotoBlob(id) {
+  const b = Number(id) % (S.meta.buckets || 128);
+  const pack = await getPack(b);
+  return pack.get(String(id)) || null;
+}
+async function getPhotoUrl(id) {
+  const k = String(id);
+  if (S.urls.has(k)) return S.urls.get(k);
+  const blob = await getPhotoBlob(k);
+  if (!blob) return null;
+  const u = URL.createObjectURL(blob);
+  S.urls.set(k, u);
+  return u;
+}
+const io = 'IntersectionObserver' in window ? new IntersectionObserver((ents) => {
+  ents.forEach(async (en) => {
+    if (!en.isIntersecting) return;
+    io.unobserve(en.target);
+    const el = en.target, id = el.dataset.pid;
+    const u = await getPhotoUrl(id);
+    if (u && el.isConnected) { el.innerHTML = `<img alt="" src="${u}">`; el.classList.remove('none'); }
+    else if (el.isConnected) { el.classList.add('none'); el.textContent = '👤'; el.dataset.pid = ''; }
+  });
+}, { rootMargin: '300px' }) : null;
+function hydratePhotos(root) {
+  $$('.pic[data-pid]', root).forEach((el) => {
+    if (!el.dataset.pid) return;
+    if (io) io.observe(el);
+    else getPhotoUrl(el.dataset.pid).then((u) => { if (u) el.innerHTML = `<img alt="" src="${u}">`; });
+  });
+}
+async function copyPhoto(id) {
+  const blob = await getPhotoBlob(id);
+  if (!blob) return toast('لا توجد صورة لهذا المندوب');
+  try {
+    const bmp = await createImageBitmap(blob);
+    const c = document.createElement('canvas');
+    c.width = bmp.width; c.height = bmp.height;
+    c.getContext('2d').drawImage(bmp, 0, 0);
+    const png = await new Promise((r) => c.toBlob(r, 'image/png'));
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
+    toast('تم نسخ الصورة ✓');
+  } catch (_) {
+    openLightbox(id, 'تعذر النسخ التلقائي على هذا المتصفح — اضغط مطولاً على الصورة ثم اختر "نسخ" أو "حفظ".');
+  }
+}
+async function openLightbox(id, note) {
+  const u = await getPhotoUrl(id);
+  if (!u) return;
+  const lb = $('#lb');
+  lb.innerHTML = `<img alt="" src="${u}"><div class="hint" style="color:#ddd;text-align:center">${esc(note || 'اضغط مطولاً على الصورة للنسخ أو الحفظ')}</div>
+    <div class="row"><button class="btn" data-lb="copy">🖼 نسخ الصورة</button><button class="btn ghost" data-lb="close">إغلاق</button></div>`;
+  lb.hidden = false;
+  lb.dataset.pid = id;
+}
+
+// ============================ بطاقة المندوب ============================
+function statusBadges(r) {
+  const { cur, next } = suspState(r);
+  const sp = Array.isArray(r.s) && r.s.length;
+  const parts = [];
+  if (cur) parts.push(`<span class="b bad">⛔ موقوف</span>`);
+  else if (r.a) parts.push(`<span class="b ok">✅ نشط وشغال</span>`);
+  else parts.push(`<span class="b mut">⚪ غير نشط</span>`);
+  parts.push(sp ? `<span class="b ok">✔ WITH SP</span>` : `<span class="b warn">⚠️ WITHOUT SP</span>`);
+  let note = '';
+  if (cur) note = `⛔ الإيقاف ينتهي: <span class="ltr">${esc(fmtDT(cur.e))}</span> (بدأ ${esc(fmtDT(cur.s))})`;
+  else if (next) note = `⏳ إيقاف مجدول يبدأ: <span class="ltr">${esc(fmtDT(next.s))}</span> ← ${esc(fmtDT(next.e))}`;
+  return { badges: parts.join(''), note };
+}
+
+function riderText(r) {
+  const { cur, next } = suspState(r);
+  const sp = Array.isArray(r.s) && r.s.length;
+  const phone = r.p ? '+' + intlPhone(r.p) : '—';
+  let work = r.a ? 'نشط وشغال ✅' : 'غير نشط ⚪';
+  if (cur) work = `موقوف ⛔ حتى ${fmtDT(cur.e)}`;
+  else if (next) work += ` (إيقاف مجدول يبدأ ${fmtDT(next.s)})`;
+  return [
+    `👤 الاسم: ${r.n || '—'}`,
+    `🆔 الكود: ${r.i}`,
+    `📱 الموبايل: ${phone}`,
+    `🪪 الرقم القومي: ${r.d || '—'}`,
+    `🏍️ نمرة المكنة: ${r.l || '—'}`,
+    `📍 نقطة البداية: ${sp ? 'WITH SP (' + r.s.join('، ') + ')' : 'WITHOUT SP'}`,
+    `⚙️ الحالة: ${work}`
+  ].join('\n');
+}
+
+function fieldRow(label, val) {
+  if (val == null || val === '') return '';
+  return `<div class="f" data-copy="${esc(val)}"><span class="k">${esc(label)}</span><span class="v">${esc(val)}</span><span class="cp">⧉</span></div>`;
+}
+
+/** بطاقة مندوب كاملة. extra = HTML إضافي يوضع أسفل الحقول */
+function riderCard(r, extra) {
+  const id = String(r.i);
+  const sb = statusBadges(r);
+  const phone = r.p ? '+' + intlPhone(r.p) : '';
+  const wa = r.p ? `https://wa.me/${intlPhone(r.p)}` : '';
+  const sp = Array.isArray(r.s) && r.s.length ? r.s.join('، ') : '';
+  return `<div class="card rider" data-rid="${esc(id)}">
+    <div class="rh">
+      <div class="ph">
+        <div class="pic ${r.h ? '' : 'none'}" data-pid="${r.h ? esc(id) : ''}" ${r.h ? 'data-zoom="' + esc(id) + '"' : ''}>${r.h ? '<span class="spin"></span>' : '👤'}</div>
+      </div>
+      <div class="ri">
+        <h3>${esc(r.n || '—')}</h3>
+        <div class="badges">${sb.badges}</div>
+        ${sb.note ? `<div class="suspnote">${sb.note}</div>` : ''}
+      </div>
+    </div>
+    <div class="fields">
+      ${fieldRow('الكود (ID)', id)}
+      ${fieldRow('الموبايل', phone)}
+      ${fieldRow('الرقم القومي', r.d)}
+      ${fieldRow('نمرة المكنة', r.l)}
+      ${fieldRow('نقطة البداية', sp || 'WITHOUT SP')}
+      ${fieldRow('الشركة', r.c)}
+    </div>
+    ${extra || ''}
+    <div class="acts">
+      <button class="btn" data-act="copyRider" data-id="${esc(id)}">📋 نسخ البيانات</button>
+      ${r.h ? `<button class="btn ghost" data-act="copyPhoto" data-id="${esc(id)}">🖼 نسخ الصورة</button>` : ''}
+      ${phone ? `<a class="btn ok" href="tel:${esc(phone)}">📞 اتصال</a><a class="btn blue" href="${esc(wa)}" target="_blank" rel="noopener">💬 واتساب</a>` : ''}
+    </div>
+  </div>`;
+}
+
+// ============================ بحث المناديب ============================
+function doRiderSearch() {
+  const q = $('#rq').value;
+  const out = $('#rOut'), info = $('#rInfo');
+  if (!q.trim()) { info.textContent = ''; out.innerHTML = '<div class="empty"><div class="big">🏍️</div>اكتب نمرة المكنة أو الاسم أو الموبايل أو الكود أو الرقم القومي</div>'; return; }
+  const res = searchRiders(S.riders, q, 40);
+  info.textContent = res.length ? `النتائج: ${res.length}${res.length >= 40 ? '+' : ''} (من ${S.riders.length.toLocaleString('en')} مندوب)` : '';
+  if (!res.length) { out.innerHTML = '<div class="empty"><div class="big">🔍</div>لا توجد نتائج. تأكد من الرقم أو جرّب جزءاً من الاسم.<br><span class="hint">المناديب غير النشطين قد لا يظهرون.</span></div>'; return; }
+  out.innerHTML = res.map((r) => riderCard(r)).join('');
+  hydratePhotos(out);
+}
+
+// ============================ بحث الأوردرات ============================
+const STATES = {
+  created: 'تم إنشاؤه', dispatched: 'تم الإسناد', accepted: 'قبل الأوردر', near_pickup: 'قرب من المطعم', arrived_at_pickup: 'وصل المطعم',
+  picked_up: 'استلم الأوردر', left_pickup: 'غادر المطعم', near_dropoff: 'قرب من العميل', arrived_at_dropoff: 'وصل للعميل',
+  completed: 'أنهى التوصيل ✅', delivered: 'تم التوصيل ✅', cancelled: 'ملغي ❌', returned: 'مرتجع'
+};
+const stateAr = (s) => (s && (STATES[String(s).toLowerCase()] || s)) || '';
+
+function doOrderSearch() {
+  const out = $('#oOut');
+  const raw = latin($('#oq').value);
+  const code = (raw.match(/\d{6,}/) || [''])[0];
+  if (!raw.trim()) { out.innerHTML = '<div class="empty"><div class="big">📦</div>اكتب كود الأوردر لعرض المناديب المرتبطين به</div>'; return; }
+  const o = code && S.orders.get(code);
+  if (!o) {
+    out.innerHTML = `<div class="empty"><div class="big">🔍</div>الأوردر <b class="ltr">${esc(code || raw)}</b> غير موجود في آخر مزامنة.<br><span class="hint">اطلب من المشرف تحديث البيانات.</span></div>`;
+    return;
+  }
+  const riders = o.r || [];
+  const copyAll = riders.length ? `<button class="btn" data-act="copyOrder" data-code="${esc(o.c)}">📋 نسخ بيانات كل المناديب</button>` : '';
+  let html = `<div class="card"><div class="ohead"><h2>📦 أوردر <span class="ltr">${esc(o.c)}</span></h2>${o.s ? `<span class="b">${esc(stateAr(o.s))}</span>` : ''}</div>
+    <div class="hint">عدد المناديب على الأوردر: <b>${riders.length}</b></div>${copyAll ? `<div class="acts">${copyAll}</div>` : ''}</div>`;
+  if (!riders.length) html += '<div class="banner warn">لا يوجد مندوب مسجل على هذا الأوردر.</div>';
+  riders.forEach((x) => {
+    const partner = x.role !== 'primary';
+    const lab = partner ? '🤝 المندوب الشريك / البديل (Partner / Re-assigned)' : '🥇 المندوب الأساسي (Primary / First)';
+    const r = x.i != null ? S.byId.get(String(x.i)) : null;
+    const prog = `<div class="ostat">${x.ls ? 'آخر حالة على الأوردر: <b>' + esc(stateAr(x.ls)) + '</b>' : ''}${x.fa ? ' · أول ظهور: <span class="ltr">' + esc(fmtDT(x.fa)) + '</span>' : ''}</div>`;
+    html += `<div class="role ${partner ? 'partner' : ''}">${lab}</div><div class="rider-box">`;
+    if (r) html += riderCard(r, prog);
+    else {   // مندوب غير موجود في القاعدة: نعرض ما سجله الأوردر
+      const phone = x.p ? '+' + intlPhone(x.p) : '';
+      html += `<div class="card"><div class="ri"><h3>${esc(x.n || 'مندوب غير معروف')}</h3></div>
+        <div class="fields">${fieldRow('الكود (ID)', x.i != null ? String(x.i) : '')}${fieldRow('الموبايل', phone)}</div>${prog}
+        <div class="hint" style="margin-top:6px">بيانات هذا المندوب الكاملة غير متاحة في آخر مزامنة.</div>
+        ${phone ? `<div class="acts"><a class="btn ok" href="tel:${esc(phone)}">📞 اتصال</a><a class="btn blue" href="https://wa.me/${esc(intlPhone(x.p))}" target="_blank" rel="noopener">💬 واتساب</a></div>` : ''}</div>`;
+    }
+    html += '</div>';
+  });
+  out.innerHTML = html;
+  hydratePhotos(out);
+}
+function orderText(o) {
+  const lines = [`📦 أوردر: ${o.c}${o.s ? ' (' + stateAr(o.s) + ')' : ''}`];
+  (o.r || []).forEach((x) => {
+    const r = x.i != null ? S.byId.get(String(x.i)) : null;
+    lines.push('', x.role === 'primary' ? '🥇 المندوب الأساسي' : '🤝 المندوب الشريك / البديل');
+    lines.push(r ? riderText(r) : `👤 الاسم: ${x.n || '—'}\n🆔 الكود: ${x.i != null ? x.i : '—'}\n📱 الموبايل: ${x.p ? '+' + intlPhone(x.p) : '—'}`);
+  });
+  return lines.join('\n');
+}
+
+// ============================ الأحداث ============================
+document.addEventListener('click', (e) => {
+  const lbBtn = e.target.closest('[data-lb]');
+  if (lbBtn) {
+    if (lbBtn.dataset.lb === 'copy') copyPhoto($('#lb').dataset.pid);
+    else $('#lb').hidden = true;
+    return;
+  }
+  if (e.target.id === 'lb') { $('#lb').hidden = true; return; }
+
+  const z = e.target.closest('[data-zoom]');
+  if (z) { openLightbox(z.dataset.zoom); return; }
+
+  const act = e.target.closest('[data-act]');
+  if (act) {
+    const a = act.dataset.act;
+    if (a === 'copyRider') { const r = S.byId.get(act.dataset.id); if (r) copyText(riderText(r)); }
+    else if (a === 'copyPhoto') copyPhoto(act.dataset.id);
+    else if (a === 'copyOrder') { const o = S.orders.get(act.dataset.code); if (o) copyText(orderText(o)); }
+    return;
+  }
+  const f = e.target.closest('[data-copy]');
+  if (f) { copyText(f.dataset.copy); return; }
+
+  const nav = e.target.closest('nav button');
+  if (nav) {
+    $$('nav button').forEach((b) => b.classList.toggle('on', b === nav));
+    $$('.view').forEach((v) => v.classList.toggle('on', v.id === 'v-' + nav.dataset.v));
+    window.scrollTo({ top: 0 });
+  }
+});
+$('#rGo').onclick = doRiderSearch;
+$('#oGo').onclick = doOrderSearch;
+$('#rq').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doRiderSearch(); $('#rq').blur(); } });
+$('#oq').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doOrderSearch(); $('#oq').blur(); } });
+let rT = null;
+$('#rq').addEventListener('input', () => { clearTimeout(rT); rT = setTimeout(doRiderSearch, 350); });
+$('#logoutBtn').onclick = logout;
+$('#refreshBtn').onclick = async () => {
+  toast('جاري تحديث البيانات…');
+  try {
+    const r = await fetch('data/meta.json?t=' + Date.now(), { cache: 'no-store' });
+    if (r.ok) S.meta = await r.json();
+    await loadData();
+    renderMeta(); doRiderSearch(); doOrderSearch();
+    toast('تم التحديث ✓');
+  } catch (_) { toast('تعذر التحديث — حاول لاحقاً'); }
+};
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+boot();
+</script>
+</body>
+</html>
