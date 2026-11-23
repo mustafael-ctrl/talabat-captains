@@ -628,11 +628,58 @@ const io = 'IntersectionObserver' in window ? new IntersectionObserver((ents) =>
     else if (el.isConnected) { el.classList.add('none'); el.textContent = '👤'; el.dataset.pid = ''; }
   });
 }, { rootMargin: '300px' }) : null;
+const LIVE_RIDER_DONE = new Set();
+async function fetchLiveRider(id) {
+  id = String(id);
+  if (!liveEnabled() || LIVE_RIDER_DONE.has(id)) return false;
+  LIVE_RIDER_DONE.add(id);
+  const code = 'R:' + id;
+  try {
+    let res = await bridgeCall({ action: 'request', code });
+    for (let i = 0; i < 8 && res.status !== 'ready'; i++) {
+      await sleepMs(1500);
+      res = await bridgeCall({ action: 'result', code });
+    }
+    if (res.status !== 'ready') return false;
+    const p = await decryptJson(S.cryptoKey, Uint8Array.from(atob(res.data), (c) => c.charCodeAt(0)));
+    if (p.nf || !(p.r && p.r.length)) return false;
+    Object.entries(p.ph || {}).forEach(([pid, b]) => {
+      try { S.urls.set(String(pid), URL.createObjectURL(new Blob([Uint8Array.from(atob(b), (c) => c.charCodeAt(0))], { type: 'image/jpeg' }))); } catch (_) {}
+    });
+    const nr = p.r[0];
+    if (S.urls.has(id)) nr.h = 1;
+    buildIndex([nr]).forEach((v, k) => {
+      S.byId.set(k, v);
+      const idx = S.riders.findIndex((x) => x._id === k);
+      if (idx >= 0) S.riders[idx] = v;
+    });
+    return true;
+  } catch (_) { return false; }
+}
+
 function hydratePhotos(root) {
   $$('.pic[data-pid]', root).forEach((el) => {
     if (!el.dataset.pid) return;
     if (io) io.observe(el);
     else getPhotoUrl(el.dataset.pid).then((u) => { if (u) el.innerHTML = `<img alt="" src="${u}">`; });
+  });
+  $$('.card.rider[data-rid]', root).forEach((card) => {
+    const id = card.dataset.rid;
+    const r = S.byId.get(id);
+    if (r && (!S.urls.has(id) && (!r.h || r.g)) && liveEnabled() && !LIVE_RIDER_DONE.has(id)) {
+      fetchLiveRider(id).then((ok) => {
+        if (ok && card.isConnected) {
+          const fresh = S.byId.get(id);
+          if (fresh) {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = riderCard(fresh);
+            const newCard = tmp.firstElementChild;
+            card.replaceWith(newCard);
+            hydratePhotos(newCard);
+          }
+        }
+      });
+    }
   });
 }
 async function copyPhoto(id) {
