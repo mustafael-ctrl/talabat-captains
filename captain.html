@@ -84,6 +84,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 .rider-box{border:1px dashed var(--bd);border-radius:14px;padding:10px;margin-bottom:8px}
 .rider-box .card{box-shadow:none;margin:0;border:0;padding:0;background:transparent}
 .ostat{font-size:12.5px;color:var(--mut);margin-top:4px}
+.osum{margin-top:8px;font-size:14px;display:grid;gap:3px;background:var(--card2);border-radius:10px;padding:8px 10px}
 
 /* ---------- Bottom nav ---------- */
 nav{position:fixed;inset-inline:0;bottom:0;z-index:25;background:var(--card);border-top:2px solid var(--or);display:flex;padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -137,6 +138,7 @@ nav button.on{color:var(--or)}
 
   <main>
     <div id="staleBanner" class="banner warn" hidden></div>
+    <div id="pendBanner" class="banner warn" hidden></div>
 
     <!-- ===== المناديب ===== -->
     <section id="v-riders" class="view on">
@@ -152,9 +154,10 @@ nav button.on{color:var(--or)}
     <!-- ===== الأوردرات ===== -->
     <section id="v-orders" class="view">
       <div class="sbar">
-        <input id="oq" type="search" inputmode="numeric" enterkeyhint="search" autocomplete="off" placeholder="كود الأوردر (مثال: 4702417071)">
+        <input id="oq" type="search" inputmode="numeric" enterkeyhint="search" autocomplete="off" placeholder="كود الأوردر (مثال: 4702417071 أو HF_EG4702417071)">
         <button class="btn" id="oGo">بحث</button>
       </div>
+      <div id="oInfo" class="hint" style="margin:0 2px 8px"></div>
       <div id="oOut"><div class="empty"><div class="big">📦</div>اكتب كود الأوردر لعرض المناديب المرتبطين به</div></div>
     </section>
   </main>
@@ -174,7 +177,9 @@ nav button.on{color:var(--or)}
  * Talabat Captains Hub — captain.html  (عرض ونسخ فقط — بدون أي أكشن)
  *
  * التدفق: meta.json -> مفتاح الوصول -> Google Sign-In -> فك auth.bin والتحقق من الإيميل
- *         -> فك riders.bin + orders.bin -> البحث والعرض والنسخ.
+ *         -> فك riders.bin + orders.bin (+ orders-archive.bin أرشيف الأيام السابقة) -> البحث والعرض والنسخ.
+ * مفتاح الوصول: يُحفظ في localStorage للأبد عند أول فتح للرابط #k=... ولا يُمسح إلا لو فشل فك التشفير فعلياً
+ *               (أخطاء الشبكة/الخادم لا تمسحه). الرابط النظيف بدون مفتاح يعمل على الجهاز الذي حُفظ فيه المفتاح.
  * الصور تُحمَّل عند الحاجة من حزم مشفرة data/photos/p<N>.bin.
  * لا توجد هنا أي بيانات أو مفاتيح مكتوبة ثابتة: كل شيء يأتي من data/meta.json ومفتاح الرابط.
  * ===================================================================== */
@@ -367,22 +372,45 @@ function gate(html) {
 }
 const gateErr = (m, extra) => gate(`<p class="err">${m}</p>${extra || ''}`);
 
+// ---------- مفتاح الوصول: يُحفظ للأبد ولا يُمسح إلا لو فشل فك التشفير فعلياً ----------
+const KEY_LS = 'cap_key';
+let MEM_KEY = '';   // نسخة في الذاكرة لو التخزين غير متاح (مثل التصفح الخاص) فلا يضيع المفتاح أثناء الجلسة
+function storeKey(k) {
+  let ok = false;
+  try { localStorage.setItem(KEY_LS, k); ok = localStorage.getItem(KEY_LS) === k; } catch (_) { ok = false; }
+  if (ok) { try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (_) {} }   // نطلب تخزيناً دائماً (لا يمسحه المتصفح عند ضيق المساحة)
+  return ok;
+}
+function forgetKey() { MEM_KEY = ''; try { localStorage.removeItem(KEY_LS); } catch (_) {} }
+/** يقبل المفتاح نفسه أو الرابط الكامل الذي يحتوي #k=... */
+function extractKey(v) {
+  const s = String(v || '').trim();
+  const m = /[#&?]k=([^&\s]+)/.exec(s);
+  if (m) { try { return decodeURIComponent(m[1]).trim(); } catch (_) { return m[1].trim(); } }
+  return s;
+}
 function getKey() {
   const m = /[#&]k=([^&]+)/.exec(location.hash || '');
-  if (m) {
-    try { localStorage.setItem('cap_key', decodeURIComponent(m[1])); } catch (_) {}
-    history.replaceState(null, '', location.pathname + location.search);   // إخفاء المفتاح من شريط العنوان
+  if (m) {   // فتح الرابط بالمفتاح: نحفظه فوراً للأبد
+    const k = extractKey('#k=' + m[1]);
+    if (k) {
+      MEM_KEY = k;
+      // نخفي المفتاح من شريط العنوان فقط بعد التأكد أنه حُفظ فعلاً؛ وإلا نتركه في الرابط حتى لا يضيع عند إعادة التحميل
+      if (storeKey(k)) history.replaceState(null, '', location.pathname + location.search);
+    }
   }
-  try { return localStorage.getItem('cap_key') || ''; } catch (_) { return ''; }
+  if (MEM_KEY) return MEM_KEY;
+  try { return localStorage.getItem(KEY_LS) || ''; } catch (_) { return ''; }
 }
 function askKey(msg) {
   gate(`<p>${msg || 'أدخل مفتاح الوصول الذي أرسله لك المشرف (أو افتح الرابط الكامل الذي وصلك).'}</p>
-    <input id="keyIn" placeholder="Access Key" autocomplete="off">
+    <input id="keyIn" placeholder="Access Key أو الرابط الكامل" autocomplete="off">
     <button class="btn" id="keyGo" style="width:100%">متابعة</button>`);
   $('#keyGo').onclick = () => {
-    const v = $('#keyIn').value.trim();
+    const v = extractKey($('#keyIn').value);
     if (!v) return;
-    try { localStorage.setItem('cap_key', v); } catch (_) {}
+    MEM_KEY = v;
+    storeKey(v);
     boot();
   };
 }
@@ -447,9 +475,11 @@ async function onCredential(resp) {
 }
 
 function denied(email) {
-  gate(`<p class="err">⛔ هذا الحساب غير مسموح له بالدخول</p><p dir="ltr">${esc(email)}</p>
-    <p>اطلب من المشرف إضافة إيميلك، أو سجّل الدخول بحساب آخر.</p>
-    <button class="btn" id="swAcc" style="width:100%">تغيير الحساب</button>`);
+  gate(`<p class="err">⛔ هذا الحساب غير مسموح له بالدخول (أو لم يُنشر إيميله بعد)</p><p dir="ltr">${esc(email)}</p>
+    <p>لو المشرف أضاف إيميلك الآن فانتظر دقيقة أو اثنتين (تحديث الموقع يتأخر قليلاً) ثم اضغط إعادة المحاولة. أو سجّل الدخول بحساب آخر.</p>
+    <button class="btn" id="retryAcc" style="width:100%;margin-bottom:8px">🔄 إعادة المحاولة</button>
+    <button class="btn ghost" id="swAcc" style="width:100%">تغيير الحساب</button>`);
+  $('#retryAcc').onclick = () => boot();
   $('#swAcc').onclick = logout;
 }
 function logout() {
@@ -460,15 +490,32 @@ function logout() {
 
 // ============================ تحميل البيانات ============================
 async function loadData() {
-  const [rb, ob] = await Promise.all([fetchBin('data/riders.bin'), fetchBin('data/orders.bin').catch(() => null)]);
+  // أرشيف الأيام السابقة (محتواه ثابت): يُحمَّل برابط مرتبط ببصمته فيُخزَّن في كاش المتصفح ولا يُنزَّل كل مرة
+  const am = S.meta && S.meta.archive;
+  const wantArch = !!(am && am.n > 0);
+  const arch = wantArch
+    ? fetch('data/orders-archive.bin?v=' + encodeURIComponent(am.h || Date.now())).then((r) => (r.ok ? r.arrayBuffer() : null)).catch(() => null)
+    : Promise.resolve(null);
+  const [rb, ob, ab] = await Promise.all([fetchBin('data/riders.bin'), fetchBin('data/orders.bin').catch(() => null), arch]);
   const rj = await decryptJson(S.cryptoKey, rb);
   S.riders = rj.r || [];
   S.byId = buildIndex(S.riders);
   S.orders = new Map();
-  if (ob) { const oj = await decryptJson(S.cryptoKey, ob); (oj.o || []).forEach((o) => S.orders.set(String(o.c), o)); }
+  S.archiveMissing = false;
+  if (ab) { try { const aj = await decryptJson(S.cryptoKey, ab); (aj.o || []).forEach((o) => S.orders.set(String(o.c), o)); } catch (_) { S.archiveMissing = true; } }
+  else if (wantArch) S.archiveMissing = true;
+  if (ob) { const oj = await decryptJson(S.cryptoKey, ob); (oj.o || []).forEach((o) => S.orders.set(String(o.c), o)); }   // الحديث يتغلب على الأرشيف
   S.packs.clear();
   S.urls.forEach((u) => { try { URL.revokeObjectURL(u); } catch (_) {} });
   S.urls.clear();
+  renderOrdersInfo();
+}
+function renderOrdersInfo() {
+  const e = $('#oInfo');
+  if (!e) return;
+  e.textContent = S.archiveMissing
+    ? `⚠️ تعذر تحميل أرشيف الأيام السابقة — المتاح الآن ${S.orders.size.toLocaleString('en')} أوردر فقط. حدّث الصفحة.`
+    : `الأرشيف المحلي: ${S.orders.size.toLocaleString('en')} أوردر (حي / مكتمل / ملغي)${liveEnabled() ? ' · الأقدم يُجلب لحظياً' : ''}`;
 }
 
 function renderMeta() {
@@ -479,6 +526,26 @@ function renderMeta() {
   const b = $('#staleBanner');
   b.hidden = !stale;
   if (stale) b.textContent = '⚠️ البيانات لم تُحدَّث منذ أكثر من 48 ساعة — قد لا تكون حالة الإيقاف دقيقة.';
+  const pend = (m.riders && m.riders.p) || 0, pb = $('#pendBanner');
+  pb.hidden = !pend;
+  if (pend) pb.textContent = `⏳ جاري استكمال تحميل بيانات ${Number(pend).toLocaleString('en')} مندوب (القومي ونقاط البداية والصور) — حدّث الصفحة بعد قليل.`;
+}
+
+/** فشل فك التشفير فعلياً (مفتاح خاطئ/تم تغييره) — وليس خطأ شبكة أو خادم */
+const isWrongKey = (e) => !!e && e.name === 'OperationError';
+async function fetchFresh(path) {
+  const r = await fetch(path + '?t=' + Date.now() + Math.random().toString(36).slice(2, 6), { cache: 'no-store' });
+  if (!r.ok) { const e = new Error('HTTP ' + r.status); e.status = r.status; throw e; }
+  return r.arrayBuffer();
+}
+async function openWithKey(key, fresh) {
+  if (fresh) { const r = await fetch('data/meta.json?t=' + Date.now(), { cache: 'no-store' }); if (r.ok) S.meta = await r.json(); }
+  S.cryptoKey = await deriveAesKey(key, S.meta.salt, S.meta.iter || 150000);
+  return decryptJson(S.cryptoKey, fresh ? await fetchFresh('data/auth.bin') : await fetchBin('data/auth.bin'));
+}
+function failGate(msg) {   // خطأ مؤقت (شبكة/خادم): لا نمسح المفتاح ونعرض إعادة المحاولة
+  gateErr(msg, '<button class="btn" id="retryBoot" style="width:100%">🔄 إعادة المحاولة</button>');
+  const b = $('#retryBoot'); if (b) b.onclick = () => boot();
 }
 
 async function boot() {
@@ -497,18 +564,24 @@ async function boot() {
   if (!sess) return showSignIn();
   S.email = sess.email;
 
-  try {
-    S.cryptoKey = await deriveAesKey(key, S.meta.salt, S.meta.iter || 150000);
-    const auth = await decryptJson(S.cryptoKey, await fetchBin('data/auth.bin'));
-    if (!(auth.e || []).includes(S.email)) return denied(S.email);
-  } catch (e) {
-    console.warn('captain: decrypt/auth failed', e);
-    if (e && e.status) return gateErr('تعذر تحميل البيانات (' + e.status + ') — حاول لاحقاً.');
-    try { localStorage.removeItem('cap_key'); } catch (_) {}
-    return askKey('⚠️ مفتاح الوصول غير صحيح أو تم تغييره. أدخل المفتاح الجديد.');
+  let auth = null;
+  try { auth = await openWithKey(key, false); }
+  catch (e) {
+    let err = e;
+    if (isWrongKey(e)) {   // قبل الحكم بأن المفتاح خاطئ: محاولة واحدة بملفات طازجة (قد يكون السبب كاشاً قديماً)
+      try { auth = await openWithKey(key, true); err = null; } catch (e2) { err = e2; }
+    }
+    if (!auth) {
+      console.warn('captain: decrypt/auth failed', err);
+      if (isWrongKey(err)) { forgetKey(); return askKey('⚠️ مفتاح الوصول غير صحيح أو تم تغييره. أدخل المفتاح الجديد.'); }   // الحالة الوحيدة التي يُمسح فيها المفتاح
+      if (err && err.status) return failGate('تعذر تحميل البيانات (' + err.status + ') — حاول لاحقاً.');
+      return failGate('تعذر الاتصال بالخادم أو قراءة البيانات — تحقق من الإنترنت ثم أعد المحاولة. (مفتاحك محفوظ)');
+    }
   }
+  if (!(auth.e || []).includes(S.email)) return denied(S.email);
+  S.bridgeSecret = auth.b || '';   // سر جسر البحث اللحظي (يأتي مشفّراً داخل auth.bin)
   try { await loadData(); }
-  catch (_) { return gateErr('تعذر قراءة البيانات — حاول التحديث بعد قليل.'); }
+  catch (_) { return failGate('تعذر قراءة البيانات — حاول التحديث بعد قليل.'); }
 
   $('#gate').hidden = true;
   $('#app').hidden = false;
@@ -532,7 +605,7 @@ function getPack(b) {
   return S.packs.get(b);
 }
 async function getPhotoBlob(id) {
-  const b = Number(id) % (S.meta.buckets || 128);
+  const b = Number(id) % (S.meta.buckets || 64);
   const pack = await getPack(b);
   return pack.get(String(id)) || null;
 }
@@ -595,7 +668,9 @@ function statusBadges(r) {
   if (cur) parts.push(`<span class="b bad">⛔ موقوف</span>`);
   else if (r.a) parts.push(`<span class="b ok">✅ نشط وشغال</span>`);
   else parts.push(`<span class="b mut">⚪ غير نشط</span>`);
-  parts.push(sp ? `<span class="b ok">✔ WITH SP</span>` : `<span class="b warn">⚠️ WITHOUT SP</span>`);
+  if (r.g && !sp) parts.push(`<span class="b mut">⏳ SP قيد التحميل</span>`);
+  else parts.push(sp ? `<span class="b ok">✔ WITH SP</span>` : `<span class="b warn">⚠️ WITHOUT SP</span>`);
+  if (r.x) parts.push(`<span class="b mut">🔸 خارج الزونات المختارة</span>`);
   let note = '';
   if (cur) note = `⛔ الإيقاف ينتهي: <span class="ltr">${esc(fmtDT(cur.e))}</span> (بدأ ${esc(fmtDT(cur.s))})`;
   else if (next) note = `⏳ إيقاف مجدول يبدأ: <span class="ltr">${esc(fmtDT(next.s))}</span> ← ${esc(fmtDT(next.e))}`;
@@ -615,7 +690,7 @@ function riderText(r) {
     `📱 الموبايل: ${phone}`,
     `🪪 الرقم القومي: ${r.d || '—'}`,
     `🏍️ نمرة المكنة: ${r.l || '—'}`,
-    `📍 نقطة البداية: ${sp ? 'WITH SP (' + r.s.join('، ') + ')' : 'WITHOUT SP'}`,
+    `📍 نقطة البداية: ${(r.g && !sp) ? 'قيد التحميل ⏳' : (sp ? 'WITH SP (' + r.s.join('، ') + ')' : 'WITHOUT SP')}`,
     `⚙️ الحالة: ${work}`
   ].join('\n');
 }
@@ -648,7 +723,8 @@ function riderCard(r, extra) {
       ${fieldRow('الموبايل', phone)}
       ${fieldRow('الرقم القومي', r.d)}
       ${fieldRow('نمرة المكنة', r.l)}
-      ${fieldRow('نقطة البداية', sp || 'WITHOUT SP')}
+      ${fieldRow('نقطة البداية', (r.g && !sp) ? 'قيد التحميل ⏳' : (sp || 'WITHOUT SP'))}
+      ${r.g && !r.d ? fieldRow('الرقم القومي', 'قيد التحميل ⏳') : ''}
       ${fieldRow('الشركة', r.c)}
     </div>
     ${extra || ''}
@@ -676,29 +752,38 @@ function doRiderSearch() {
 const STATES = {
   created: 'تم إنشاؤه', dispatched: 'تم الإسناد', accepted: 'قبل الأوردر', near_pickup: 'قرب من المطعم', arrived_at_pickup: 'وصل المطعم',
   picked_up: 'استلم الأوردر', left_pickup: 'غادر المطعم', near_dropoff: 'قرب من العميل', arrived_at_dropoff: 'وصل للعميل',
-  completed: 'أنهى التوصيل ✅', delivered: 'تم التوصيل ✅', cancelled: 'ملغي ❌', returned: 'مرتجع'
+  completed: 'أنهى التوصيل ✅', delivered: 'تم التوصيل ✅', cancelled: 'ملغي ❌', returned: 'مرتجع', ended: 'انتهى (لم تُحسم حالته بعد)'
 };
 const stateAr = (s) => (s && (STATES[String(s).toLowerCase()] || s)) || '';
 
-function doOrderSearch() {
-  const out = $('#oOut');
-  const raw = latin($('#oq').value);
-  const code = (raw.match(/\d{6,}/) || [''])[0];
-  if (!raw.trim()) { out.innerHTML = '<div class="empty"><div class="big">📦</div>اكتب كود الأوردر لعرض المناديب المرتبطين به</div>'; return; }
-  const o = code && S.orders.get(code);
-  if (!o) {
-    out.innerHTML = `<div class="empty"><div class="big">🔍</div>الأوردر <b class="ltr">${esc(code || raw)}</b> غير موجود في آخر مزامنة.<br><span class="hint">اطلب من المشرف تحديث البيانات.</span></div>`;
-    return;
-  }
-  const riders = o.r || [];
+/** يستخرج أكواد الأوردرات من نص حر: أرقام عربية/فارسية ← إنجليزية، حذف HF_EG وأي رموز أو مسافات، ويدعم أكثر من كود */
+function parseOrderCodes(raw) {
+  const s = latin(raw).replace(/HF[\s_\-]*EG/gi, ' ');
+  const toks = s.split(/[\s,;،\n\r\t]+/).map((t) => t.replace(/\D/g, '')).filter((t) => t.length >= 6);
+  if (toks.length) return [...new Set(toks)].slice(0, 10);
+  const all = s.replace(/\D/g, '');   // كود مكتوب بمسافات/شرطات بين أجزائه
+  return all.length >= 6 ? [all] : [];
+}
+const entryRider = (x) => (x && x.i != null ? S.byId.get(String(x.i)) : null);
+const entryName = (x) => { const r = entryRider(x); return (r && r.n) || (x && x.n) || (x && x.i != null ? 'كود ' + x.i : 'مندوب غير معروف'); };
+
+/** كارت أوردر: ملخص الأساسي/الشريك ثم بطاقة كاملة لكل مندوب (الأساسي أولاً ثم الشريك/البديل زمنياً) */
+function orderCardHtml(o) {
+  const riders = (o.r || []).slice().sort((a, b) => (a.role === 'partner' ? 1 : 0) - (b.role === 'partner' ? 1 : 0));   // ترتيب ثابت: الأساسي أولاً
+  const prim = riders.filter((x) => x.role !== 'partner'), part = riders.filter((x) => x.role === 'partner');
   const copyAll = riders.length ? `<button class="btn" data-act="copyOrder" data-code="${esc(o.c)}">📋 نسخ بيانات كل المناديب</button>` : '';
+  const summary = riders.length
+    ? `<div class="osum"><div>🥇 الأساسي: <b>${esc(prim.map(entryName).join('، ') || '—')}</b></div>
+       <div>🤝 الشريك / البديل: <b>${esc(part.map(entryName).join('، ') || 'لا يوجد مسجل في الأرشيف')}</b></div></div>` : '';
   let html = `<div class="card"><div class="ohead"><h2>📦 أوردر <span class="ltr">${esc(o.c)}</span></h2>${o.s ? `<span class="b">${esc(stateAr(o.s))}</span>` : ''}</div>
-    <div class="hint">عدد المناديب على الأوردر: <b>${riders.length}</b></div>${copyAll ? `<div class="acts">${copyAll}</div>` : ''}</div>`;
+    <div class="hint">${o.t ? 'وقت الأوردر: <span class="ltr">' + esc(fmtDT(o.t)) + '</span> · ' : ''}عدد المناديب على الأوردر: <b>${riders.length}</b></div>${summary}${copyAll ? `<div class="acts">${copyAll}</div>` : ''}</div>`;
   if (!riders.length) html += '<div class="banner warn">لا يوجد مندوب مسجل على هذا الأوردر.</div>';
+  let pn = 0;
   riders.forEach((x) => {
-    const partner = x.role !== 'primary';
-    const lab = partner ? '🤝 المندوب الشريك / البديل (Partner / Re-assigned)' : '🥇 المندوب الأساسي (Primary / First)';
-    const r = x.i != null ? S.byId.get(String(x.i)) : null;
+    const partner = x.role === 'partner';
+    if (partner) pn++;
+    const lab = partner ? `🤝 المندوب الشريك / البديل${part.length > 1 ? ' #' + pn : ''} (Partner / Re-assigned)` : '🥇 المندوب الأساسي (Primary / First)';
+    const r = entryRider(x);
     const prog = `<div class="ostat">${x.ls ? 'آخر حالة على الأوردر: <b>' + esc(stateAr(x.ls)) + '</b>' : ''}${x.fa ? ' · أول ظهور: <span class="ltr">' + esc(fmtDT(x.fa)) + '</span>' : ''}</div>`;
     html += `<div class="role ${partner ? 'partner' : ''}">${lab}</div><div class="rider-box">`;
     if (r) html += riderCard(r, prog);
@@ -711,14 +796,83 @@ function doOrderSearch() {
     }
     html += '</div>';
   });
-  out.innerHTML = html;
+  return html;
+}
+
+
+// ============================ البحث اللحظي عن الأوردرات القديمة (جسر Google Apps Script) ============================
+const LIVE = { jobs: new Map(), fail: new Map() };
+const sleepMs = (ms) => new Promise((r) => setTimeout(r, ms));
+const liveEnabled = () => !!(S.meta && S.meta.bridge && S.bridgeSecret);
+async function bridgeCall(params) {
+  const u = new URL(S.meta.bridge);
+  Object.entries({ ...params, secret: S.bridgeSecret }).forEach(([k, v]) => u.searchParams.set(k, v));
+  const r = await fetch(u.toString(), { cache: 'no-store' });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const j = await r.json();
+  if (!j || j.ok === false) throw new Error((j && j.error) || 'bad-response');
+  return j;
+}
+/** يطلب الأوردر من الجسر ثم يستعلم كل ثانيتين حتى 20 ثانية. يرجع 'ok' | 'nf' (غير موجود) | 'timeout' | 'error' */
+function liveLookup(code) {
+  if (LIVE.jobs.has(code)) return LIVE.jobs.get(code);
+  const job = (async () => {
+    try {
+      let res = await bridgeCall({ action: 'request', code });
+      for (let i = 0; i < 10 && res.status !== 'ready'; i++) {
+        await sleepMs(2000);
+        res = await bridgeCall({ action: 'result', code });
+        if (res.status === 'none') res = await bridgeCall({ action: 'request', code });   // انتهى الطلب من الطابور: أعد إرساله
+      }
+      if (res.status !== 'ready') return 'timeout';
+      const p = await decryptJson(S.cryptoKey, Uint8Array.from(atob(res.data), (c) => c.charCodeAt(0)));
+      if (p.nf || !p.o) return 'nf';
+      (p.r || []).forEach((r) => { if (r.i != null && p.ph && p.ph[String(r.i)]) r.h = 1; });
+      buildIndex(p.r || []).forEach((v, k) => S.byId.set(k, v));
+      Object.entries(p.ph || {}).forEach(([id, b]) => {   // الصور القادمة مع النتيجة تُعرض مباشرة
+        try { S.urls.set(String(id), URL.createObjectURL(new Blob([Uint8Array.from(atob(b), (c) => c.charCodeAt(0))], { type: 'image/jpeg' }))); } catch (_) {}
+      });
+      S.orders.set(String(p.o.c), p.o);
+      return 'ok';
+    } catch (e) { console.warn('live lookup failed', e); return 'error'; }
+  })();
+  LIVE.jobs.set(code, job);
+  job.finally(() => LIVE.jobs.delete(code));
+  return job;
+}
+const LIVE_MSG = {
+  nf: 'الأوردر غير موجود في النظام (تأكد من الكود).',
+  timeout: 'لم يصل رد خلال 20 ثانية — قد يكون جهاز المشرف مغلقاً أو الإضافة غير شغالة. حاول بعد قليل.',
+  error: 'تعذر الاتصال بجسر البحث اللحظي — حاول لاحقاً.'
+};
+
+function doOrderSearch() {
+  const out = $('#oOut');
+  const raw = $('#oq').value;
+  if (!raw.trim()) { out.innerHTML = '<div class="empty"><div class="big">📦</div>اكتب كود الأوردر لعرض المناديب المرتبطين به</div>'; return; }
+  const codes = parseOrderCodes(raw);   // تنظيف: أرقام عربية ← إنجليزية، حذف HF_EG والرموز، قبل البحث في S.orders
+  if (!codes.length) { out.innerHTML = '<div class="empty"><div class="big">🔢</div>كود الأوردر 6 أرقام على الأقل.</div>'; return; }
+  out.innerHTML = codes.map((code) => {
+    const o = S.orders.get(code);
+    if (o) return orderCardHtml(o);
+    if (liveEnabled()) {   // أوردر أقدم من الأرشيف المحلي: بحث لحظي عبر الجسر
+      const f = LIVE.fail.get(code);
+      if (f) return `<div class="empty"><div class="big">🔍</div>الأوردر <b class="ltr">${esc(code)}</b>: ${esc(LIVE_MSG[f] || LIVE_MSG.error)}<br><button class="btn sm" style="margin-top:8px" data-act="liveRetry" data-code="${esc(code)}">🔄 إعادة المحاولة</button></div>`;
+      liveLookup(code).then((st) => {
+        if (st !== 'ok') LIVE.fail.set(code, st);
+        if (parseOrderCodes($('#oq').value).includes(code)) doOrderSearch();
+      });
+      return `<div class="empty"><span class="spin"></span><br>جاري جلب الأوردر القديم <b class="ltr">${esc(code)}</b> من النظام… <span class="hint">(حتى 20 ثانية)</span></div>`;
+    }
+    return `<div class="empty"><div class="big">🔍</div>الأوردر <b class="ltr">${esc(code)}</b> غير موجود في الأرشيف المحلي.<br><span class="hint">تأكد من الكود، أو اطلب من المشرف تحديث البيانات.</span></div>`;
+  }).join('');
   hydratePhotos(out);
 }
 function orderText(o) {
   const lines = [`📦 أوردر: ${o.c}${o.s ? ' (' + stateAr(o.s) + ')' : ''}`];
   (o.r || []).forEach((x) => {
     const r = x.i != null ? S.byId.get(String(x.i)) : null;
-    lines.push('', x.role === 'primary' ? '🥇 المندوب الأساسي' : '🤝 المندوب الشريك / البديل');
+    lines.push('', x.role === 'partner' ? '🤝 المندوب الشريك / البديل' : '🥇 المندوب الأساسي');
     lines.push(r ? riderText(r) : `👤 الاسم: ${x.n || '—'}\n🆔 الكود: ${x.i != null ? x.i : '—'}\n📱 الموبايل: ${x.p ? '+' + intlPhone(x.p) : '—'}`);
   });
   return lines.join('\n');
@@ -742,6 +896,7 @@ document.addEventListener('click', (e) => {
     const a = act.dataset.act;
     if (a === 'copyRider') { const r = S.byId.get(act.dataset.id); if (r) copyText(riderText(r)); }
     else if (a === 'copyPhoto') copyPhoto(act.dataset.id);
+    else if (a === 'liveRetry') { LIVE.fail.delete(act.dataset.code); doOrderSearch(); }
     else if (a === 'copyOrder') { const o = S.orders.get(act.dataset.code); if (o) copyText(orderText(o)); }
     return;
   }
@@ -761,6 +916,8 @@ $('#rq').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.prevent
 $('#oq').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doOrderSearch(); $('#oq').blur(); } });
 let rT = null;
 $('#rq').addEventListener('input', () => { clearTimeout(rT); rT = setTimeout(doRiderSearch, 350); });
+let oT = null;
+$('#oq').addEventListener('input', () => { clearTimeout(oT); oT = setTimeout(() => { const v = $('#oq').value; if (!v.trim() || parseOrderCodes(v).length) doOrderSearch(); }, 400); });
 $('#logoutBtn').onclick = logout;
 $('#refreshBtn').onclick = async () => {
   toast('جاري تحديث البيانات…');
